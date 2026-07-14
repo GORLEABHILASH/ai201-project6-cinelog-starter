@@ -103,6 +103,29 @@ def test_get_watchlist_returns_newest_first(app, sample_user):
         assert titles[1] == "Alien"
 
 
+# ── Deduplication (extra edge case, not requested in review) ──────────────────
+
+def test_add_to_watchlist_duplicate_raises(app, sample_user, sample_film):
+    """
+    Adding the same film to the watchlist twice should raise
+    AlreadyInWatchlistError and leave exactly one entry — the watchlist
+    equivalent of test_add_to_collection_duplicate_raises. I chose this case
+    because deduplication is the whole point of Comment 2, and the review only
+    asked for a nonexistent-film test; this locks the happy-path dedup behavior
+    so a future refactor can't silently reintroduce duplicate rows.
+    """
+    with app.app_context():
+        add_to_watchlist(user_id=sample_user, film_id=sample_film)
+
+        with pytest.raises(AlreadyInWatchlistError):
+            add_to_watchlist(user_id=sample_user, film_id=sample_film)
+
+        count = WatchlistEntry.query.filter_by(
+            user_id=sample_user, film_id=sample_film
+        ).count()
+        assert count == 1
+
+
 # ── remove_from_watchlist (stretch feature) ──────────────────────────────────
 
 def test_remove_from_watchlist_deletes_entry(app, sample_user, sample_film):
