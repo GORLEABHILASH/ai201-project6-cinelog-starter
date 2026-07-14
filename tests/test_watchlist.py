@@ -58,12 +58,11 @@ def test_add_to_watchlist_nonexistent_film_raises(app, sample_user):
     Adding a film_id that doesn't exist in the database should raise
     FilmNotFoundError, not a database integrity error.
 
-    Mirrors test_add_to_collection_nonexistent_film_raises. film_id is an
-    integer here to match the pre-refactor Film.id column on this branch;
-    it becomes a UUID string after the main-branch UUID rebase (Comment 6).
+    Mirrors test_add_to_collection_nonexistent_film_raises. film_id is a UUID
+    string to match Film.id after the main-branch integer-to-UUID refactor.
     """
     with app.app_context():
-        fake_film_id = 999999
+        fake_film_id = "00000000-0000-0000-0000-000000000000"
 
         with pytest.raises(FilmNotFoundError):
             add_to_watchlist(user_id=sample_user, film_id=fake_film_id)
